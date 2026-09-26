@@ -1,0 +1,13 @@
+{
+  "name": "post-logger",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A tiny Node.js server that appends POST request bodies to a text file.",
+  "main": "post_logger.js",
+  "scripts": {
+    "start": "node post_logger.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
