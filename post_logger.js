@@ -14,6 +14,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
+let requestCount = 0;
+
 const server = http.createServer((req, res) => {
   // Browser-based clients, including TurboWarp HTTP extensions, send this
   // preflight request before a cross-origin POST.
@@ -39,6 +41,8 @@ const server = http.createServer((req, res) => {
 
   req.on('end', () => {
     const body = Buffer.concat(chunks).toString('utf8');
+    requestCount += 1;
+    console.log(`Received POST #${requestCount} (${Buffer.byteLength(body, 'utf8')} bytes)`);
 
     // Append the raw request body followed by one newline.
     const line = `${body}\n`;
