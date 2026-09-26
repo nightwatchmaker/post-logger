@@ -1,6 +1,6 @@
 # POST Logger
 
-Small Node.js HTTP server that accepts POST requests and appends each request body as one JSON-encoded line in `requests.txt`.
+Small Node.js HTTP server that accepts POST requests and appends each request body as plaintext to `requests.txt`, with a newline after each request.
 
 ## Run locally
 
@@ -20,7 +20,7 @@ PORT=3001 node post_logger.js
 curl -X POST -d 'hello world' http://localhost:3000/
 ```
 
-The request body is JSON-encoded so bodies containing newline characters still occupy exactly one line in `requests.txt`.
+The request body is written as-is, followed by one newline.
 
 ## Deploying
 

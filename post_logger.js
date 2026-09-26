@@ -22,9 +22,8 @@ const server = http.createServer((req, res) => {
   req.on('end', () => {
     const body = Buffer.concat(chunks).toString('utf8');
 
-    // JSON.stringify keeps each request on exactly one physical line,
-    // even when the request body itself contains newline characters.
-    const line = `${JSON.stringify(body)}\n`;
+    // Append the raw request body followed by one newline.
+    const line = `${body}\n`;
 
     fs.appendFile(OUTPUT_FILE, line, (error) => {
       if (error) {
