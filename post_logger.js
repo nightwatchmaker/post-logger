@@ -7,6 +7,7 @@ const path = require('path');
 const HOST = process.env.HOST || '0.0.0.0';
 const PORT = Number(process.env.PORT || 3000);
 const OUTPUT_FILE = process.env.OUTPUT_FILE || path.join(__dirname, 'requests.txt');
+const INDEX_FILE = path.join(__dirname, 'index.html');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,6 +18,21 @@ const corsHeaders = {
 let requestCount = 0;
 
 const server = http.createServer((req, res) => {
+  if (req.method === 'GET' && (req.url === '/' || req.url === '/index.html')) {
+    fs.readFile(INDEX_FILE, (error, html) => {
+      if (error) {
+        console.error('Failed to read index.html:', error);
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('Failed to load the device info page.\n');
+        return;
+      }
+
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(html);
+    });
+    return;
+  }
+
   // Browser-based clients, including TurboWarp HTTP extensions, send this
   // preflight request before a cross-origin POST.
   if (req.method === 'OPTIONS') {

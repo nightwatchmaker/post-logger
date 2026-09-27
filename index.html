@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Device info collector</title>
+  <style>
+    body { font: 16px system-ui, sans-serif; max-width: 42rem; margin: 3rem auto; padding: 0 1rem; }
+    #status { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Device info</h1>
+  <p id="status">Collecting device information…</p>
+
+  <script>
+    async function collectDeviceInfo() {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown';
+      const lines = [
+        `browserName=${navigator.userAgentData?.brands?.map(x => x.brand).join(', ') || navigator.appName || 'unknown'}`,
+        `platformName=${navigator.userAgentData?.platform || navigator.platform || 'unknown'}`,
+        `browserVersion=${navigator.userAgentData?.platformVersion || navigator.appVersion || 'unknown'}`,
+        `mobileTablet=${navigator.userAgentData?.mobile ? 'mobile' : 'desktop'}`,
+        `userAgent=${navigator.userAgent}`,
+        `timezone=${timezone}`,
+        `currentTime=${new Date().toISOString()}`,
+        `languages=${navigator.languages?.join(', ') || navigator.language || 'unknown'}`,
+        `referrer=${document.referrer || 'none'}`,
+        `screenWidth=${screen.width}`,
+        `screenHeight=${screen.height}`,
+        `colorDepth=${screen.colorDepth}`,
+        `devicePixelRatio=${window.devicePixelRatio || 1}`,
+        `hardwareConcurrency=${navigator.hardwareConcurrency || 'unknown'}`,
+        `touchPoints=${navigator.maxTouchPoints || 0}`
+      ];
+
+      try {
+        const response = await fetch('/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+          body: lines.join('\n')
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        document.getElementById('status').textContent = 'Device information saved.';
+      } catch (error) {
+        document.getElementById('status').textContent = `Could not save device information: ${error.message}`;
+      }
+    }
+
+    collectDeviceInfo();
+  </script>
+</body>
+</html>

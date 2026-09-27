@@ -20,6 +20,8 @@ PORT=3001 node post_logger.js
 curl -X POST -d 'hello world' http://localhost:3000/
 ```
 
+Opening `/` in a browser serves `index.html`. That page collects browser-visible device information and sends it to the same server as one plaintext POST.
+
 The request body is written as-is, followed by one newline.
 
 ## Deploying
