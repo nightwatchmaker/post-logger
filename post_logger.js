@@ -97,7 +97,7 @@ const server = http.createServer((req, res) => {
     console.log(`Received POST #${requestCount} from ${clientIp} (${Buffer.byteLength(body, 'utf8')} bytes)`);
 
     // Record the proxy-provided IP and approximate IP geolocation before the raw browser data.
-    const line = `ip=${clientIp}\ncountry=${geo.country}\nregion=${geo.region}\ncity=${geo.city}\n${body}\n`;
+    const line = `\n--- request ---\nip=${clientIp}\ncountry=${geo.country}\nregion=${geo.region}\ncity=${geo.city}\n${body}\n`;
 
     fs.appendFile(OUTPUT_FILE, line, (error) => {
       if (error) {
