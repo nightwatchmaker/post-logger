@@ -22,7 +22,7 @@ curl -X POST -d 'hello world' http://localhost:3000/
 
 Opening `/` in a browser serves `index.html`. That page collects browser-visible device information and sends it to the same server as one plaintext POST.
 
-Each POST is written with the proxy-provided client IP on an `ip=...` line, followed by the raw request body and a newline.
+Each POST is written with the proxy-provided client IP, approximate IP-based country/region/city, then the raw request body. Geolocation is supplied by ipwho.is and may be approximate or unavailable.
 
 ## Deploying
 

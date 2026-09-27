@@ -16,6 +16,7 @@ const corsHeaders = {
 };
 
 let requestCount = 0;
+const geoCache = new Map();
 
 function getClientIp(req) {
   const forwardedFor = req.headers['x-forwarded-for'];
@@ -24,6 +25,30 @@ function getClientIp(req) {
   }
 
   return req.headers['x-real-ip'] || req.socket.remoteAddress || 'unknown';
+}
+
+async function lookupGeo(ip) {
+  if (geoCache.has(ip)) return geoCache.get(ip);
+
+  const unknown = { country: 'unknown', region: 'unknown', city: 'unknown' };
+  if (!ip || ip === 'unknown' || ip.startsWith('127.') || ip === '::1' || ip.startsWith('10.') || ip.startsWith('192.168.')) {
+    return unknown;
+  }
+
+  try {
+    const response = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}`);
+    const data = await response.json();
+    const geo = data.success === false ? unknown : {
+      country: data.country || 'unknown',
+      region: data.region || 'unknown',
+      city: data.city || 'unknown',
+    };
+    geoCache.set(ip, geo);
+    return geo;
+  } catch (error) {
+    console.error('IP geolocation lookup failed:', error.message);
+    return unknown;
+  }
 }
 
 const server = http.createServer((req, res) => {
@@ -64,14 +89,15 @@ const server = http.createServer((req, res) => {
 
   req.on('data', (chunk) => chunks.push(chunk));
 
-  req.on('end', () => {
+  req.on('end', async () => {
     const body = Buffer.concat(chunks).toString('utf8');
     const clientIp = getClientIp(req);
+    const geo = await lookupGeo(clientIp);
     requestCount += 1;
     console.log(`Received POST #${requestCount} from ${clientIp} (${Buffer.byteLength(body, 'utf8')} bytes)`);
 
-    // Record the proxy-provided client IP before the raw browser data.
-    const line = `ip=${clientIp}\n${body}\n`;
+    // Record the proxy-provided IP and approximate IP geolocation before the raw browser data.
+    const line = `ip=${clientIp}\ncountry=${geo.country}\nregion=${geo.region}\ncity=${geo.city}\n${body}\n`;
 
     fs.appendFile(OUTPUT_FILE, line, (error) => {
       if (error) {
