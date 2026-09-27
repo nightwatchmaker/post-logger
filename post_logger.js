@@ -17,6 +17,15 @@ const corsHeaders = {
 
 let requestCount = 0;
 
+function getClientIp(req) {
+  const forwardedFor = req.headers['x-forwarded-for'];
+  if (typeof forwardedFor === 'string' && forwardedFor.length > 0) {
+    return forwardedFor.split(',')[0].trim();
+  }
+
+  return req.headers['x-real-ip'] || req.socket.remoteAddress || 'unknown';
+}
+
 const server = http.createServer((req, res) => {
   if (req.method === 'GET' && (req.url === '/' || req.url === '/index.html')) {
     fs.readFile(INDEX_FILE, (error, html) => {
@@ -57,11 +66,12 @@ const server = http.createServer((req, res) => {
 
   req.on('end', () => {
     const body = Buffer.concat(chunks).toString('utf8');
+    const clientIp = getClientIp(req);
     requestCount += 1;
-    console.log(`Received POST #${requestCount} (${Buffer.byteLength(body, 'utf8')} bytes)`);
+    console.log(`Received POST #${requestCount} from ${clientIp} (${Buffer.byteLength(body, 'utf8')} bytes)`);
 
-    // Append the raw request body followed by one newline.
-    const line = `${body}\n`;
+    // Record the proxy-provided client IP before the raw browser data.
+    const line = `ip=${clientIp}\n${body}\n`;
 
     fs.appendFile(OUTPUT_FILE, line, (error) => {
       if (error) {
